@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Si Rubah v2 - Ethereum Rescue Tool</title>
+    <!-- Memuat Library Ethers.js versi 5 untuk Jaringan EVM -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <style>
+        body {
+            background-color: #0c0d12;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: #14151f;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(240, 185, 11, 0.15); /* Efek glow emas khas Ethereum/Web3 */
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #f0b90b;
+        }
+        
+        /* Styling untuk Tombol Pilihan Bahasa */
+        .lang-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .btn-lang {
+            background-color: #222436;
+            color: #ffffff;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-lang:hover {
+            background-color: #323550;
+        }
+        .btn-lang.active {
+            background-color: #f0b90b;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #f0b90b;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #aaaaaa;
+            font-size: 12px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-box {
+            background-color: #1b1d2e;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 30px;
+            word-break: break-all;
+            border: 1px solid #282b45;
+        }
+        /* Penyesuaian khusus teks Arab (Right-to-Left) */
+        .rtl {
+            direction: rtl;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-connect {
+            background-color: #ffffff;
+            color: #0c0d12;
+            margin-bottom: 15px;
+        }
+        .btn-connect:hover {
+            background-color: #e0e0e0;
+        }
+        .btn-revoke {
+            background-color: #f0b90b;
+            color: #000000;
+        }
+        .btn-revoke:hover {
+            background-color: #d8a60a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Menu Pilih Bahasa -->
+        <div class="lang-switcher">
+            <button class="btn-lang active" onclick="gantiBahasa('id', this)">ID</button>
+            <button class="btn-lang" onclick="gantiBahasa('en', this)">EN</button>
+            <button class="btn-lang" onclick="gantiBahasa('ar', this)">العربية</button>
+            <button class="btn-lang" onclick="gantiBahasa('zh', this)">中文</button>
+        </div>
+
+        <!-- INPUT ALAMAT EVAKUASI BARU -->
+    <h3 style="text-align:left; font-size:14px; color:#f0b90b; margin-top:20px;">➔ Alamat Dompet Baru (Untuk Evakuasi Saldo):</h3>
+    <input type="text" id="inputAlamatBaru" placeholder="Masukkan alamat EVM (0x...) yang aman" style="width:93%; padding:10px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:15px;">
+
+    <!-- INPUT MULTI-ALAMAT PENIPU -->
+    <h3 style="text-align:left; font-size:14px; margin-top:10px;">➔ Masukkan Alamat Kontrak/Dompet Penipu (Maks 6):</h3>
+    <input type="text" id="penipu1" placeholder="Alamat Penipu 1" style="width:93%; padding:8px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:5px;">
+    <input type="text" id="penipu2" placeholder="Alamat Penipu 2 (Opsional)" style="width:93%; padding:8px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:5px;">
+    <input type="text" id="penipu3" placeholder="Alamat Penipu 3 (Opsional)" style="width:93%; padding:8px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:5px;">
+    <input type="text" id="penipu4" placeholder="Alamat Penipu 4 (Opsional)" style="width:93%; padding:8px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:5px;">
+    <input type="text" id="penipu5" placeholder="Alamat Penipu 5 (Opsional)" style="width:93%; padding:8px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:5px;">
+    <input type="text" id="penipu6" placeholder="Alamat Penipu 6 (Opsional)" style="width:93%; padding:8px; border-radius:5px; border:1px solid #333; background:#1b1d2e; color:#fff; margin-bottom:15px;">
+
+    <!-- TOMBOL EKSEKUSI YANG SUDAH DIPERBARUI -->
+    <button class="btn btn-revoke" id="btnRevoke" onclick="amankanDanPindahkanAset()">
+        🛡️ Eksekusi Penyelamatan Paket Darurat
+    </button>
+</div>
+
+    <!-- Skrip Pemindah Bahasa Otomatis -->
+    <script>
+        // Kamus Data Bahasa Khusus EVM
+        const kamusBahasa = {
+            id: {
+                subtitle: "EVM Network (Ethereum) Shield",
+                status: "Status: Dompet Belum Terhubung",
+                connect: "🔌 Hubungkan Dompet",
+                revoke: "🛡️ Amankan Aset (Revoke Izin 0)",
+                isRtl: false
+            },
+            en: {
+                subtitle: "EVM Network (Ethereum) Shield",
+                status: "Status: Wallet Not Connected",
+                connect: "🔌 Connect Wallet",
+                revoke: "🛡️ Secure Asset (Revoke Permission 0)",
+                isRtl: false
+            },
+            ar: {
+                subtitle: "درع شبكة إيثيريوم (EVM)",
+                status: "الحالة: المحفظة غير متصلة",
+                connect: "🔌 ربط المحفظة",
+                revoke: "🛡️ تأمين الأصول (إلغاء الصلاحية 0)",
+                isRtl: true
+            },
+            zh: {
+                subtitle: "EVM 网络 (以太坊) 防护盾",
+                status: "状态：钱包未连接",
+                connect: "🔌 连接钱包",
+                revoke: "🛡️ 安全资产 (撤销授权重置为 0)",
+                isRtl: false
+            }
+        };
+
+        // Fungsi penukar bahasa
+        function gantiBahasa(kodeLang, elemenTombol) {
+            const data = kamusBahasa[kodeLang];
+            
+            document.getElementById("txtSubtitle").innerText = data.subtitle;
+            
+            // Ubah teks status hanya jika alamat user masih kosong
+            if(typeof userAddress === 'undefined' || userAddress === "") {
+                document.getElementById("walletStatus").innerText = data.status;
+            }
+            
+            document.getElementById("btnConnect").innerText = data.connect;
+            document.getElementById("btnRevoke").innerText = data.revoke;
+
+            const boxStatus = document.getElementById("walletStatus");
+            if (data.isRtl) {
+                boxStatus.classList.add("rtl");
+            } else {
+                boxStatus.classList.remove("rtl");
+            }
+
+            const semuaTombol = document.querySelectorAll('.btn-lang');
+            semuaTombol.forEach(btn => btn.classList.remove('active'));
+            elemenTombol.classList.add('active');
+        }
+    </script>
+
+    <!-- Menghubungkan ke logika JavaScript Ethereum (app.js) -->
+    <script src="app.js"></script>
+</body>
+</html>
